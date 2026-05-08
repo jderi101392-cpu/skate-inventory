@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SKATE INVENTORY</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;text-transform:uppercase}
+:root{
+  --bg:#fff;--bg2:#f7f7f6;--bg3:#f0efed;--border:rgba(0,0,0,0.1);--border2:rgba(0,0,0,0.2);
+  --text:#111210;--text2:#666660;--text3:#999993;--accent:#111210;
+  --blue:#2563eb;
+  --danger:#c0392b;--danger-bg:#fdf2f2;--warning:#b7770d;--warning-bg:#fffbf0;
+  --success:#1a7f4b;--success-bg:#f0faf5;--info:#1a5fb7;--info-bg:#f0f5ff;
+  --radius:8px;--radius-lg:12px;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg3);color:var(--text);min-height:100vh;padding:20px 16px}
+.app{max-width:720px;margin:0 auto}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px}
+.header h1{font-size:15px;font-weight:600;letter-spacing:2px}
+.loc-wrap{display:flex;align-items:center;gap:8px}
+.loc-label{font-size:10px;letter-spacing:1.5px;color:var(--text2);font-weight:500}
+.loc-select{background:var(--bg2);color:var(--text);border:0.5px solid var(--border2);border-radius:6px;padding:5px 8px;font-size:12px;font-family:'Inter',sans-serif;font-weight:500;letter-spacing:1px;cursor:pointer}
+.tabs{display:flex;gap:2px;margin-bottom:1.25rem;background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:4px}
+.tab{flex:1;font-size:10px;padding:7px 4px;background:none;border:none;border-radius:6px;color:var(--text2);cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;letter-spacing:1px;transition:all 0.15s}
+.tab:not(.active):hover{background:var(--bg2);color:var(--text)}
+.tab.active{background:var(--blue);color:#fff;box-shadow:0 1px 4px rgba(37,99,235,0.25)}
+.admin-loc-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem}
+.admin-loc-tab{font-size:11px;padding:6px 14px;background:var(--bg);border:0.5px solid var(--border);border-radius:6px;cursor:pointer;font-weight:600;letter-spacing:1px;color:var(--text2);font-family:'Inter',sans-serif;transition:all 0.15s}
+.admin-loc-tab:not(.active):hover{background:var(--bg2)}
+.admin-loc-tab.active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 1px 4px rgba(37,99,235,0.25)}
+.panel{display:none}.panel.active{display:block}
+.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1.1rem 1.25rem;margin-bottom:1rem}
+.card-title{font-size:10px;font-weight:600;letter-spacing:2px;color:var(--text2);margin-bottom:12px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.form-row.three{grid-template-columns:1fr 1fr 1fr}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:10px;letter-spacing:1.5px;color:var(--text2);font-weight:500}
+.form-group select,.form-group input[type=text],.form-group input[type=number]{background:var(--bg2);color:var(--text);border:0.5px solid var(--border2);border-radius:6px;padding:8px 10px;font-size:12px;font-family:'Inter',sans-serif;transition:border-color 0.12s;width:100%}
+.form-group select:focus,.form-group input:focus{outline:none;border-color:var(--accent)}
+.btn{border:none;border-radius:var(--radius);padding:9px 16px;font-size:11px;font-weight:600;font-family:'Inter',sans-serif;letter-spacing:1.5px;cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn-primary{background:var(--accent);color:#fff;width:100%}
+.btn-primary:hover:not(:disabled){opacity:0.85}
+.btn-secondary{background:var(--bg2);color:var(--text);border:0.5px solid var(--border2);width:100%}
+.btn-secondary:hover:not(:disabled){background:var(--bg3)}
+.btn-success{background:var(--success-bg);color:var(--success);border:0.5px solid rgba(26,127,75,0.2)}
+.btn-neutral{background:var(--bg2);color:var(--text2);border:0.5px solid var(--border2)}
+.btn-sm{padding:5px 10px;font-size:10px}
+.btn:disabled{cursor:not-allowed;opacity:0.7}
+.btn.confirmed{background:var(--success)!important;color:#fff!important;border-color:var(--success)!important;opacity:1!important}
+@keyframes checkPop{0%{transform:scale(0);opacity:0}50%{transform:scale(1.3)}100%{transform:scale(1);opacity:1}}
+.btn .check-icon{display:none;font-size:13px}
+.btn.confirmed .check-icon{display:inline-block;animation:checkPop 0.25s ease forwards}
+.btn.confirmed .btn-label{display:none}
+.line-items{margin-bottom:12px}
+.line-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg2);border-radius:6px;margin-bottom:6px;font-size:11px}
+.line-item-info{flex:1}
+.line-item-remove{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0 4px;line-height:1}
+.line-item-remove:hover{color:var(--danger)}
+.divider{height:0.5px;background:var(--border);margin:12px 0}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem}
+.metric{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem;text-align:center}
+.metric-label{font-size:10px;letter-spacing:1.5px;color:var(--text2);font-weight:500;margin-bottom:6px}
+.metric-value{font-size:24px;font-weight:600}
+.inv-wrap{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.col-header{display:grid;grid-template-columns:52px 1fr 76px 58px 68px 58px 36px;padding:7px 14px;background:var(--bg2);border-bottom:0.5px solid var(--border)}
+.col-header span{font-size:10px;letter-spacing:1px;color:var(--text2);font-weight:500;text-align:right}
+.col-header span:first-child,.col-header span:nth-child(2){text-align:left}
+.size-row{display:grid;grid-template-columns:52px 1fr 76px 58px 68px 58px 36px;align-items:center;padding:9px 14px;cursor:pointer;border-bottom:0.5px solid var(--border);background:var(--bg);transition:background 0.1s}
+.size-row:last-child{border-bottom:none}
+.size-row:hover{background:var(--bg2)}
+.size-row.expanded{background:var(--bg2);border-left:2px solid var(--accent)}
+.size-label{font-size:13px;font-weight:600;letter-spacing:0.5px}
+.bar-wrap{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;margin:0 10px}
+.bar-fill{height:100%;border-radius:2px;background:var(--text3)}
+.col-num{font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+.col-num.dim{color:var(--text3)}.col-num.danger{color:var(--danger)}.col-num.warn{color:var(--warning)}
+.chevron{text-align:right;color:var(--text3);transition:transform 0.15s;display:flex;justify-content:flex-end;align-items:center}
+.chevron.open{transform:rotate(90deg)}
+.chevron svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.style-breakdown{display:none;border-bottom:0.5px solid var(--border)}
+.style-breakdown.open{display:block}
+.style-row{display:grid;grid-template-columns:52px 80px 1fr 76px 58px 68px 58px 36px;align-items:center;padding:6px 14px 6px 26px;border-bottom:0.5px solid rgba(0,0,0,0.05);background:var(--bg2)}
+.style-row:last-child{border-bottom:none}
+.style-tag{font-size:10px;font-weight:600;letter-spacing:1px;color:var(--text2);background:var(--bg3);padding:2px 6px;border-radius:4px;border:0.5px solid var(--border)}
+.school-card{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-lg);margin-bottom:10px;overflow:hidden;transition:border-color 0.3s,box-shadow 0.3s}
+.school-card.status-packed{border-left:3px solid var(--warning)}
+.school-card.status-delivered{border-color:var(--success);border-left:3px solid var(--success);box-shadow:0 0 0 2px rgba(26,127,75,0.1)}
+.school-header{padding:12px 14px;border-bottom:0.5px solid var(--border)}
+.school-card.status-delivered .school-header{background:var(--success-bg)}
+.school-name{font-size:14px;font-weight:600;margin-bottom:6px}
+.school-meta-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.school-body{padding:10px 14px}
+.school-items{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.school-item-tag{font-size:11px;background:var(--bg2);border:0.5px solid var(--border);border-radius:4px;padding:3px 8px}
+.school-actions{display:flex;gap:8px;flex-wrap:wrap}
+.status-badge{font-size:10px;padding:3px 8px;border-radius:4px;font-weight:600;letter-spacing:1px}
+.status-badge-packed{background:var(--warning-bg);color:var(--warning);border:0.5px solid rgba(183,119,13,0.3)}
+.status-badge-delivered{background:var(--success-bg);color:var(--success);border:0.5px solid rgba(26,127,75,0.3)}
+.school-type-badge{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600;letter-spacing:1px;background:var(--bg3);border:0.5px solid var(--border);color:var(--text2)}
+.total-pairs{font-size:11px;font-weight:600;color:var(--text2)}
+.ts-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+.ts-item{font-size:10px;color:var(--text2);letter-spacing:0.5px}
+.ts-item strong{color:var(--text);font-weight:600}
+.badge{display:inline-block;font-size:10px;padding:3px 8px;border-radius:4px;font-weight:600;letter-spacing:1px}
+.badge-out{background:var(--danger-bg);color:var(--danger);border:0.5px solid rgba(192,57,43,0.2)}
+.badge-in{background:var(--success-bg);color:var(--success);border:0.5px solid rgba(26,127,75,0.2)}
+.badge-info{background:var(--info-bg);color:var(--info);border:0.5px solid rgba(26,95,183,0.2)}
+.badge-warn{background:var(--warning-bg);color:var(--warning);border:0.5px solid rgba(183,119,13,0.2)}
+.log-row{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:0.5px solid var(--border)}
+.log-row:last-child{border-bottom:none}
+.log-meta{flex:1}
+.log-title{font-size:12px;font-weight:500;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.log-sub{font-size:10px;color:var(--text2);margin-top:3px;letter-spacing:0.5px}
+.log-qty{font-size:12px;font-weight:600;white-space:nowrap}
+.empty{text-align:center;padding:2rem;color:var(--text3);font-size:11px;letter-spacing:2px}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg);border-radius:var(--radius-lg);padding:1.25rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:13px;font-weight:600;letter-spacing:2px;margin-bottom:16px}
+.modal-actions{display:flex;gap:8px;margin-top:16px}
+.modal-actions .btn{flex:1}
+.admin-overview{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:1.25rem}
+.admin-loc-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem;cursor:pointer;transition:border-color 0.12s}
+.admin-loc-card:hover{border-color:var(--border2)}
+.admin-loc-card.selected{border-color:var(--blue);border-left:3px solid var(--blue)}
+.admin-loc-name{font-size:14px;font-weight:600;letter-spacing:1px;margin-bottom:8px}
+.admin-loc-stats{display:flex;gap:12px;flex-wrap:wrap}
+.admin-stat{font-size:11px;color:var(--text2)}
+.admin-stat strong{color:var(--text);font-weight:600}
+.admin-section-title{font-size:11px;font-weight:600;letter-spacing:2px;color:var(--text2);margin-bottom:10px;padding-bottom:6px;border-bottom:0.5px solid var(--border)}
+.readonly-banner{background:var(--warning-bg);border:0.5px solid rgba(183,119,13,0.2);border-radius:var(--radius);padding:8px 12px;font-size:10px;color:var(--warning);font-weight:600;letter-spacing:1px;margin-bottom:1rem;text-align:center}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>SKATE INVENTORY</h1>
+    <div class="loc-wrap">
+      <span class="loc-label">LOCATION</span>
+      <select class="loc-select" id="currentLocation" onchange="onLocationChange()">
+        <option value="IN">IN</option><option value="TN">TN</option><option value="MN">MN</option><option value="WI">WI</option><option value="IL">IL</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="tabs-standard" class="tabs" style="display:none">
+    <button class="tab" onclick="switchTab('log')">LOG MOVEMENT</button>
+    <button class="tab" onclick="switchTab('schools')">ACTIVE SCHOOLS</button>
+    <button class="tab" onclick="switchTab('inventory')">INVENTORY</button>
+    <button class="tab" onclick="switchTab('history')">HISTORY</button>
+  </div>
+  <div id="tabs-admin" class="tabs" style="display:none">
+    <button class="tab" onclick="switchAdminTab('overview')">OVERVIEW</button>
+    <button class="tab" onclick="switchAdminTab('log')">LOG MOVEMENT</button>
+    <button class="tab" onclick="switchAdminTab('schools')">ACTIVE SCHOOLS</button>
+    <button class="tab" onclick="switchAdminTab('inventory')">INVENTORY</button>
+    <button class="tab" onclick="switchAdminTab('history')">HISTORY</button>
+  </div>
+
+  <div id="panel-log" class="panel">
+    <div class="card">
+      <div class="form-row">
+        <div class="form-group"><label>MOVEMENT TYPE</label>
+          <select id="moveType" onchange="onTypeChange()">
+            <option value="school">SEND TO SCHOOL</option><option value="damaged">DAMAGED</option>
+            <option value="repaired">REPAIRED</option><option value="added">NEW SKATES ADDED</option>
+            <option value="retired">SKATES RETIRED</option><option value="transfer">TRANSFER BETWEEN OFFICES</option>
+          </select>
+        </div>
+        <div class="form-group" id="grpStyle"><label>STYLE</label>
+          <select id="moveStyle"><option value="B">B</option><option value="C">C</option><option value="R">R</option><option value="R-New">R &#8211; NEW</option><option value="V">V</option><option value="V-UP">V &#8211; UP</option></select>
+        </div>
+      </div>
+      <div id="schoolFields">
+        <div class="form-row">
+          <div class="form-group"><label>SCHOOL NAME</label><input type="text" id="schoolName" placeholder="E.G. LINCOLN ELEMENTARY"></div>
+          <div class="form-group"><label>SCHOOL TYPE</label>
+            <select id="schoolType"><option value="Elementary">ELEMENTARY</option><option value="Middle">MIDDLE</option><option value="High">HIGH</option></select>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="card-title">ADD SKATES TO PACK</div>
+        <div class="form-row three">
+          <div class="form-group"><label>STYLE</label>
+            <select id="packStyle"><option value="B">B</option><option value="C">C</option><option value="R">R</option><option value="R-New">R &#8211; NEW</option><option value="V">V</option><option value="V-UP">V &#8211; UP</option></select>
+          </div>
+          <div class="form-group"><label>SIZE</label>
+            <select id="packSize">
+              <option value="J8">J8</option><option value="J9">J9</option><option value="J10">J10</option><option value="J11">J11</option><option value="J12">J12</option><option value="J13">J13</option>
+              <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option>
+              <option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
+              <option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option>
+            </select>
+          </div>
+          <div class="form-group"><label>QTY (PAIRS)</label><input type="number" id="packQty" min="1" value="1"></div>
+        </div>
+        <button id="addToPackBtn" class="btn btn-secondary" style="margin-bottom:12px">
+          <span class="check-icon">&#10003;</span><span class="btn-label">+ ADD TO PACK</span>
+        </button>
+        <div class="line-items" id="lineItems"></div>
+        <button id="confirmPackBtn" class="btn btn-primary">
+          <span class="check-icon">&#10003; PACK CONFIRMED</span><span class="btn-label">CONFIRM PACK</span>
+        </button>
+      </div>
+      <div id="standardFields" style="display:none">
+        <div class="form-row">
+          <div class="form-group"><label>SIZE</label>
+            <select id="moveSize">
+              <option value="J8">J8</option><option value="J9">J9</option><option value="J10">J10</option><option value="J11">J11</option><option value="J12">J12</option><option value="J13">J13</option>
+              <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option>
+              <option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
+              <option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option>
+            </select>
+          </div>
+          <div class="form-group"><label>QUANTITY (PAIRS)</label><input type="number" id="moveQty" min="1" value="1"></div>
+        </div>
+        <div id="transferRow" style="display:none;margin-bottom:10px">
+          <div class="form-row">
+            <div class="form-group"><label>TO LOCATION</label>
+              <select id="transferTo"><option value="IN">IN</option><option value="TN">TN</option><option value="MN">MN</option><option value="WI">WI</option><option value="IL">IL</option></select>
+            </div>
+            <div class="form-group"><label>&nbsp;</label><span style="font-size:10px;color:var(--text2);padding-top:10px;display:block">DEDUCTED FROM YOUR LOCATION</span></div>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:12px"><label>NOTE (OPTIONAL)</label><input type="text" id="moveNote" placeholder="OPTIONAL NOTE"></div>
+        <button id="logMovementBtn" class="btn btn-primary">
+          <span class="check-icon">&#10003; LOGGED</span><span class="btn-label">LOG MOVEMENT</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-schools" class="panel">
+    <div id="schoolsList"><p class="empty">NO ACTIVE SCHOOLS</p></div>
+  </div>
+  <div id="panel-inventory" class="panel">
+    <div id="invBanner"></div><div id="adminLocTabs"></div>
+    <div class="metrics" id="metricsBar"></div>
+    <div class="inv-wrap" id="invWrap"></div>
+  </div>
+  <div id="panel-history" class="panel">
+    <div class="card"><div id="historyList"><p class="empty">NO MOVEMENTS LOGGED YET</p></div></div>
+  </div>
+  <div id="panel-admin-overview" class="panel">
+    <div class="admin-overview" id="adminOverview"></div>
+    <div id="adminDetail"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-title">EDIT SCHOOL PACK</div>
+    <div class="form-row">
+      <div class="form-group"><label>SCHOOL NAME</label><input type="text" id="editSchoolName"></div>
+      <div class="form-group"><label>SCHOOL TYPE</label>
+        <select id="editSchoolType"><option value="Elementary">ELEMENTARY</option><option value="Middle">MIDDLE</option><option value="High">HIGH</option></select>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="card-title">SKATES IN PACK</div>
+    <div class="line-items" id="editLineItems"></div>
+    <div class="card-title" style="margin-top:12px">ADD MORE</div>
+    <div class="form-row three">
+      <div class="form-group"><label>STYLE</label>
+        <select id="editPackStyle"><option value="B">B</option><option value="C">C</option><option value="R">R</option><option value="R-New">R &#8211; NEW</option><option value="V">V</option><option value="V-UP">V &#8211; UP</option></select>
+      </div>
+      <div class="form-group"><label>SIZE</label>
+        <select id="editPackSize">
+          <option value="J8">J8</option><option value="J9">J9</option><option value="J10">J10</option><option value="J11">J11</option><option value="J12">J12</option><option value="J13">J13</option>
+          <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option>
+          <option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
+          <option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option>
+        </select>
+      </div>
+      <div class="form-group"><label>QTY</label><input type="number" id="editPackQty" min="1" value="1"></div>
+    </div>
+    <button id="editAddBtn" class="btn btn-secondary" style="margin-bottom:12px">+ ADD TO PACK</button>
+    <div class="modal-actions">
+      <button class="btn btn-neutral" onclick="closeEditModal()"><span class="btn-label">CANCEL</span></button>
+      <button id="saveEditBtn" class="btn btn-primary"><span class="check-icon">&#10003; SAVED</span><span class="btn-label">SAVE CHANGES</span></button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SIZES=['J8','J9','J10','J11','J12','J13','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16'];
+const STYLES=['B','C','R','R-New','V','V-UP'];
+const SL={'B':'B','C':'C','R':'R','R-New':'R\u2013NEW','V':'V','V-UP':'V\u2013UP'};
+const TL={school:'SENT TO SCHOOL',damaged:'DAMAGED',repaired:'REPAIRED',added:'NEW SKATES ADDED',retired:'SKATES RETIRED',transfer:'TRANSFER',delivered:'DELIVERED TO SCHOOL',pickedup:'PICKED UP FROM SCHOOL'};
+const BADGE={school:'badge-warn',damaged:'badge-warn',repaired:'badge-in',added:'badge-info',retired:'badge-out',transfer:'badge-info',delivered:'badge-out',pickedup:'badge-in'};
+const ALL_LOCS=['IN','TN','MN','WI','IL'];
+
+let log=[],inventory={},expanded={},schools=[],packItems=[],editingSchoolId=null,editItems=[],adminViewLoc='TN';
+
+function getLocation(){return document.getElementById('currentLocation').value}
+function isAdmin(){return getLocation()==='IN'}
+function initLoc(loc){if(!inventory[loc]){inventory[loc]={};STYLES.forEach(st=>{inventory[loc][st]={};SIZES.forEach(sz=>{inventory[loc][st][sz]={inhouse:0,repairs:0,retired:0}})})}}
+function getInv(loc,st,sz){initLoc(loc);return inventory[loc][st][sz]}
+function fmt(ts){if(!ts)return'\u2014';const d=new Date(ts);return d.toLocaleDateString([],{month:'short',day:'numeric'})+' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
+
+function flashConfirm(btn,cb){
+  if(!btn){cb&&cb();return}
+  btn.classList.add('confirmed');btn.disabled=true;
+  setTimeout(()=>{btn.classList.remove('confirmed');btn.disabled=false;cb&&cb();},1200);
+}
+
+function hideAllPanels(){
+  document.querySelectorAll('.panel').forEach(p=>{p.style.display='none';p.classList.remove('active')});
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+}
+
+function onLocationChange(){
+  expanded={};hideAllPanels();
+  if(isAdmin()){
+    document.getElementById('tabs-standard').style.display='none';
+    document.getElementById('tabs-admin').style.display='flex';
+    switchAdminTab('overview');
+  } else {
+    document.getElementById('tabs-standard').style.display='flex';
+    document.getElementById('tabs-admin').style.display='none';
+    switchTab('log');
+  }
+}
+
+function switchTab(name){
+  hideAllPanels();
+  ['log','schools','inventory','history'].forEach((n,i)=>{
+    document.querySelectorAll('#tabs-standard .tab')[i].classList.toggle('active',n===name);
+  });
+  const p=document.getElementById('panel-'+name);p.style.display='block';p.classList.add('active');
+  if(name==='inventory')renderInventoryPanel(getLocation(),false);
+  if(name==='history')renderHistory(getLocation());
+  if(name==='schools')renderSchools(getLocation());
+}
+
+function switchAdminTab(name){
+  hideAllPanels();
+  ['overview','log','schools','inventory','history'].forEach((n,i)=>{
+    document.querySelectorAll('#tabs-admin .tab')[i].classList.toggle('active',n===name);
+  });
+  if(name==='overview'){const p=document.getElementById('panel-admin-overview');p.style.display='block';p.classList.add('active');renderAdminOverview();}
+  else if(name==='log'){const p=document.getElementById('panel-log');p.style.display='block';p.classList.add('active');}
+  else if(name==='schools'){const p=document.getElementById('panel-schools');p.style.display='block';p.classList.add('active');renderSchools('IN');}
+  else if(name==='inventory'){const p=document.getElementById('panel-inventory');p.style.display='block';p.classList.add('active');renderInventoryPanel(adminViewLoc,true);}
+  else if(name==='history'){const p=document.getElementById('panel-history');p.style.display='block';p.classList.add('active');renderHistory('IN');}
+}
+
+function renderInventoryPanel(loc,adminMode){
+  document.getElementById('invBanner').innerHTML=adminMode?`<div class="readonly-banner">VIEWING ALL LOCATIONS \u2014 READ ONLY</div>`:'';
+  document.getElementById('adminLocTabs').innerHTML=adminMode
+    ?`<div class="admin-loc-tabs">${ALL_LOCS.map(l=>`<button class="admin-loc-tab${l===loc?' active':''}" onclick="selectAdminInvLoc('${l}')">${l}</button>`).join('')}</div>`:'';
+  renderInventoryForLoc(loc);
+}
+function selectAdminInvLoc(loc){adminViewLoc=loc;expanded={};renderInventoryPanel(loc,true)}
+
+function renderInventoryForLoc(loc){
+  initLoc(loc);let tIH=0,tOut=0,tRep=0,maxTotal=0;
+  const ok={};
+  schools.filter(s=>s.loc===loc&&s.status==='delivered').forEach(s=>{s.items.forEach(i=>{const k=i.style+'|'+i.size;ok[k]=(ok[k]||0)+i.qty})});
+  const st=SIZES.map(sz=>{
+    let ih=0,out=0,rep=0,ret=0;
+    STYLES.forEach(s=>{const d=inventory[loc][s][sz];ih+=d.inhouse;rep+=d.repairs;ret+=d.retired;out+=(ok[s+'|'+sz]||0)});
+    tIH+=ih;tOut+=out;tRep+=rep;const tot=ih+out+rep;if(tot>maxTotal)maxTotal=tot;
+    return{sz,ih,out,rep,ret,tot};
+  });
+  const cv=`<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+  const hdr=`<div class="col-header"><span style="text-align:left">SIZE</span><span style="text-align:left"></span><span>IN-HOUSE</span><span>OUT</span><span>REPAIRS</span><span>RETIRED</span><span></span></div>`;
+  const rows=st.map(({sz,ih,out,rep,ret,tot})=>{
+    const pct=maxTotal>0?Math.round((tot/maxTotal)*100):0,isExp=!!expanded[sz];
+    const sr=STYLES.map(s=>{
+      const d=inventory[loc][s][sz];const so=ok[s+'|'+sz]||0;
+      return `<div class="style-row"><div></div><div><span class="style-tag">${SL[s]}</span></div><div></div>
+        <div class="col-num" style="font-size:11px">${d.inhouse}</div>
+        <div class="col-num ${so?'danger':'dim'}" style="font-size:11px">${so||'\u2014'}</div>
+        <div class="col-num ${d.repairs?'warn':'dim'}" style="font-size:11px">${d.repairs||'\u2014'}</div>
+        <div class="col-num dim" style="font-size:11px">${d.retired||'\u2014'}</div><div></div></div>`;
+    }).join('');
+    return `<div><div class="size-row${isExp?' expanded':''}" onclick="toggleSize('${sz}','${loc}')">
+      <div class="size-label">${sz}</div><div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <div class="col-num">${ih}</div><div class="col-num ${out?'danger':'dim'}">${out||'\u2014'}</div>
+      <div class="col-num ${rep?'warn':'dim'}">${rep||'\u2014'}</div><div class="col-num dim">${ret||'\u2014'}</div>
+      <div class="chevron${isExp?' open':''}">${cv}</div>
+    </div><div class="style-breakdown${isExp?' open':''}">${sr}</div></div>`;
+  }).join('');
+  document.getElementById('invWrap').innerHTML=hdr+rows;
+  document.getElementById('metricsBar').innerHTML=`
+    <div class="metric"><div class="metric-label">IN-HOUSE</div><div class="metric-value">${tIH}</div></div>
+    <div class="metric"><div class="metric-label">OUT AT SCHOOLS</div><div class="metric-value">${tOut}</div></div>
+    <div class="metric"><div class="metric-label">IN REPAIRS</div><div class="metric-value">${tRep}</div></div>`;
+}
+function toggleSize(sz,loc){expanded[sz]=!expanded[sz];renderInventoryForLoc(loc)}
+
+function getLocTotals(loc){
+  initLoc(loc);let ih=0,out=0,rep=0;
+  const ok={};
+  schools.filter(s=>s.loc===loc&&s.status==='delivered').forEach(s=>{s.items.forEach(i=>{const k=i.style+'|'+i.size;ok[k]=(ok[k]||0)+i.qty})});
+  STYLES.forEach(s=>SIZES.forEach(sz=>{const d=inventory[loc][s][sz];ih+=d.inhouse;rep+=d.repairs;out+=(ok[s+'|'+sz]||0)}));
+  return{ih,out,rep,activeSchools:schools.filter(s=>s.loc===loc).length};
+}
+
+function renderAdminOverview(){
+  document.getElementById('adminOverview').innerHTML=ALL_LOCS.filter(l=>l!=='IN').map(loc=>{
+    const{ih,out,rep,activeSchools}=getLocTotals(loc);
+    return `<div class="admin-loc-card${adminViewLoc===loc?' selected':''}" onclick="selectAdminDetailLoc('${loc}')">
+      <div class="admin-loc-name">${loc}</div>
+      <div class="admin-loc-stats">
+        <div class="admin-stat"><strong>${ih}</strong> IN-HOUSE</div>
+        <div class="admin-stat"><strong>${out}</strong> OUT</div>
+        <div class="admin-stat"><strong>${rep}</strong> REPAIRS</div>
+        <div class="admin-stat"><strong>${activeSchools}</strong> SCHOOLS</div>
+      </div></div>`;
+  }).join('');
+  renderAdminDetail();
+}
+function selectAdminDetailLoc(loc){adminViewLoc=loc;renderAdminOverview()}
+
+function renderAdminDetail(){
+  const loc=adminViewLoc;
+  const as=schools.filter(s=>s.loc===loc);
+  const rl=log.filter(e=>e.loc===loc).slice(0,10);
+  let sHTML='<p style="font-size:11px;color:var(--text3);padding:8px 0;letter-spacing:1px">NO ACTIVE SCHOOLS</p>';
+  if(as.length)sHTML=as.map(s=>{
+    const tot=s.items.reduce((a,b)=>a+b.qty,0);
+    const sb=s.status==='packed'?'<span class="status-badge status-badge-packed">PACKED</span>':'<span class="status-badge status-badge-delivered">&#10003; DELIVERED</span>';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--border)">
+      <div><div style="font-size:12px;font-weight:600">${s.name}</div>
+      <div style="font-size:10px;color:var(--text2);margin-top:2px">${s.type.toUpperCase()} \u00b7 ${tot} PAIRS</div></div>${sb}</div>`;
+  }).join('');
+  let hHTML='<p style="font-size:11px;color:var(--text3);padding:8px 0;letter-spacing:1px">NO HISTORY</p>';
+  if(rl.length)hHTML=rl.map(e=>{
+    const time=e.ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    const date=e.ts.toLocaleDateString([],{month:'short',day:'numeric'});
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:0.5px solid var(--border);font-size:11px">
+      <div><span class="badge ${BADGE[e.type]||'badge-info'}">${TL[e.type]||e.type}</span><span style="margin-left:6px;font-weight:500">${e.school||((SL[e.style]||'')+' SZ '+(e.size||''))}</span></div>
+      <div style="color:var(--text2);font-size:10px">${date.toUpperCase()} ${time}</div></div>`;
+  }).join('');
+  let snapRows='';
+  initLoc(loc);const ok2={};
+  schools.filter(s=>s.loc===loc&&s.status==='delivered').forEach(s=>{s.items.forEach(i=>{const k=i.style+'|'+i.size;ok2[k]=(ok2[k]||0)+i.qty})});
+  SIZES.forEach(sz=>{
+    let ih=0,out=0,rep=0;
+    STYLES.forEach(s=>{const d=inventory[loc][s][sz];ih+=d.inhouse;rep+=d.repairs;out+=(ok2[s+'|'+sz]||0)});
+    if(ih+out+rep>0)snapRows+=`<div style="display:grid;grid-template-columns:50px 1fr 60px 50px 60px;padding:5px 0;border-bottom:0.5px solid var(--border);font-size:11px">
+      <strong>${sz}</strong><div></div><div style="text-align:right">${ih}</div>
+      <div style="text-align:right;color:${out?'var(--danger)':'var(--text3)'}">${out||'\u2014'}</div>
+      <div style="text-align:right;color:${rep?'var(--warning)':'var(--text3)'}">${rep||'\u2014'}</div></div>`;
+  });
+  const sc=snapRows?`<div style="display:grid;grid-template-columns:50px 1fr 60px 50px 60px;padding:4px 0 8px;border-bottom:0.5px solid var(--border)">
+    <span style="font-size:10px;color:var(--text2)">SIZE</span><div></div>
+    <span style="font-size:10px;color:var(--text2);text-align:right">IN-HOUSE</span>
+    <span style="font-size:10px;color:var(--text2);text-align:right">OUT</span>
+    <span style="font-size:10px;color:var(--text2);text-align:right">REPAIRS</span></div>${snapRows}`
+    :'<p style="font-size:11px;color:var(--text3);padding:8px 0;letter-spacing:1px">NO INVENTORY LOGGED</p>';
+  document.getElementById('adminDetail').innerHTML=`
+    <div class="card"><div class="admin-section-title">${loc} \u2014 ACTIVE SCHOOLS</div>${sHTML}</div>
+    <div class="card"><div class="admin-section-title">${loc} \u2014 RECENT ACTIVITY</div>${hHTML}</div>
+    <div class="card"><div class="admin-section-title">${loc} \u2014 INVENTORY SNAPSHOT</div>${sc}</div>`;
+}
+
+function onTypeChange(){
+  const t=document.getElementById('moveType').value;
+  document.getElementById('schoolFields').style.display=t==='school'?'block':'none';
+  document.getElementById('standardFields').style.display=t!=='school'?'block':'none';
+  document.getElementById('grpStyle').style.display=t==='school'?'none':'block';
+  document.getElementById('transferRow').style.display=t==='transfer'?'block':'none';
+}
+
+function addLineItem(){
+  packItems.push({style:document.getElementById('packStyle').value,size:document.getElementById('packSize').value,qty:parseInt(document.getElementById('packQty').value)||1});
+  renderPackItems();
+  flashConfirm(document.getElementById('addToPackBtn'));
+}
+function removeLineItem(i){packItems.splice(i,1);renderPackItems()}
+function renderPackItems(){
+  const el=document.getElementById('lineItems');
+  if(!packItems.length){el.innerHTML='';return}
+  el.innerHTML=packItems.map((item,i)=>`<div class="line-item"><div class="line-item-info">${SL[item.style]} \u00b7 SIZE ${item.size} \u00b7 ${item.qty} PAIRS</div><button class="line-item-remove" onclick="removeLineItem(${i})">\u00d7</button></div>`).join('');
+}
+
+function confirmPack(){
+  const loc=getLocation(),name=document.getElementById('schoolName').value.trim().toUpperCase(),type=document.getElementById('schoolType').value;
+  if(!name){alert('ENTER A SCHOOL NAME');return}
+  if(!packItems.length){alert('ADD AT LEAST ONE SIZE/STYLE TO THE PACK');return}
+  schools.push({id:Date.now(),loc,name,type,items:[...packItems],status:'packed',packedAt:Date.now(),deliveredAt:null,pickedUpAt:null});
+  log.unshift({ts:new Date(),loc,type:'school',school:name,items:[...packItems],note:'PACKED'});
+  packItems=[];document.getElementById('schoolName').value='';renderPackItems();renderHistory(loc);
+  flashConfirm(document.getElementById('confirmPackBtn'),()=>renderSchools(loc));
+}
+
+function confirmLogMovement(){
+  const loc=getLocation(),type=document.getElementById('moveType').value;
+  const style=document.getElementById('moveStyle').value,size=document.getElementById('moveSize').value;
+  const qty=parseInt(document.getElementById('moveQty').value)||1,note=document.getElementById('moveNote').value.trim();
+  const inv=getInv(loc,style,size);
+  if(type==='damaged'){if(inv.inhouse<qty){alert('NOT ENOUGH IN-HOUSE INVENTORY');return}inv.inhouse-=qty;inv.repairs+=qty;}
+  else if(type==='repaired'){if(inv.repairs<qty){alert('NOT ENOUGH IN REPAIRS');return}inv.repairs-=qty;inv.inhouse+=qty;}
+  else if(type==='added'){inv.inhouse+=qty;}
+  else if(type==='retired'){if(inv.inhouse<qty){alert('NOT ENOUGH IN-HOUSE INVENTORY');return}inv.inhouse-=qty;inv.retired+=qty;}
+  else if(type==='transfer'){
+    const dest=document.getElementById('transferTo').value;
+    if(dest===loc){alert('CANNOT TRANSFER TO SAME LOCATION');return}
+    if(inv.inhouse<qty){alert('NOT ENOUGH IN-HOUSE INVENTORY');return}
+    inv.inhouse-=qty;getInv(dest,style,size).inhouse+=qty;
+  }
+  log.unshift({ts:new Date(),loc,type,style,size,qty,note});
+  document.getElementById('moveNote').value='';document.getElementById('moveQty').value=1;
+  renderHistory(loc);
+  flashConfirm(document.getElementById('logMovementBtn'));
+}
+
+function openEditModal(id){
+  const s=schools.find(x=>x.id===id);if(!s)return;
+  editingSchoolId=id;editItems=[...s.items.map(i=>({...i}))];
+  document.getElementById('editSchoolName').value=s.name;
+  document.getElementById('editSchoolType').value=s.type;
+  renderEditLineItems();
+  document.getElementById('editModal').classList.add('open');
+}
+function closeEditModal(){document.getElementById('editModal').classList.remove('open');editingSchoolId=null;editItems=[]}
+function addEditLineItem(){editItems.push({style:document.getElementById('editPackStyle').value,size:document.getElementById('editPackSize').value,qty:parseInt(document.getElementById('editPackQty').value)||1});renderEditLineItems()}
+function removeEditLineItem(i){editItems.splice(i,1);renderEditLineItems()}
+function renderEditLineItems(){
+  const el=document.getElementById('editLineItems');
+  if(!editItems.length){el.innerHTML='<p style="font-size:11px;color:var(--text3);padding:4px 0">NO ITEMS IN PACK</p>';return}
+  el.innerHTML=editItems.map((item,i)=>`<div class="line-item"><div class="line-item-info">${SL[item.style]} \u00b7 SIZE ${item.size} \u00b7 ${item.qty} PAIRS</div><button class="line-item-remove" onclick="removeEditLineItem(${i})">\u00d7</button></div>`).join('');
+}
+function saveSchoolEdit(){
+  const s=schools.find(x=>x.id===editingSchoolId);if(!s)return;
+  const name=document.getElementById('editSchoolName').value.trim().toUpperCase();
+  const type=document.getElementById('editSchoolType').value;
+  if(!name){alert('ENTER A SCHOOL NAME');return}
+  if(!editItems.length){alert('PACK MUST HAVE AT LEAST ONE ITEM');return}
+  s.name=name;s.type=type;s.items=[...editItems];
+  flashConfirm(document.getElementById('saveEditBtn'),()=>{closeEditModal();renderSchools(getLocation())});
+}
+
+function markDelivered(id){
+  const loc=getLocation(),s=schools.find(x=>x.id===id);if(!s)return;
+  for(const item of s.items){if(getInv(loc,item.style,item.size).inhouse<item.qty){alert('NOT ENOUGH IN-HOUSE INVENTORY FOR '+SL[item.style]+' SIZE '+item.size);return}}
+  s.items.forEach(item=>{getInv(loc,item.style,item.size).inhouse-=item.qty});
+  s.status='delivered';s.deliveredAt=Date.now();
+  log.unshift({ts:new Date(),loc,type:'delivered',school:s.name,items:s.items,note:''});
+  renderHistory(loc);
+  const btn=document.getElementById('deliver-btn-'+id);
+  flashConfirm(btn,()=>renderSchools(loc));
+}
+
+function markPickedUp(id){
+  const loc=getLocation(),s=schools.find(x=>x.id===id);if(!s)return;
+  s.items.forEach(item=>{getInv(loc,item.style,item.size).inhouse+=item.qty});
+  s.status='pickedup';s.pickedUpAt=Date.now();
+  log.unshift({ts:new Date(),loc,type:'pickedup',school:s.name,items:s.items,note:''});
+  schools=schools.filter(x=>x.id!==id);
+  renderHistory(loc);
+  const btn=document.getElementById('pickup-btn-'+id);
+  flashConfirm(btn,()=>renderSchools(loc));
+}
+
+function renderSchools(loc){
+  const active=schools.filter(s=>s.loc===loc);
+  const el=document.getElementById('schoolsList');
+  if(!active.length){el.innerHTML='<p class="empty">NO ACTIVE SCHOOLS</p>';return}
+  el.innerHTML=active.map(s=>{
+    const totalPairs=s.items.reduce((a,b)=>a+b.qty,0);
+    const itemTags=s.items.map(i=>`<span class="school-item-tag">${SL[i.style]} \u00b7 SZ ${i.size} \u00b7 ${i.qty}PR</span>`).join('');
+    const isPacked=s.status==='packed';
+    const sb=isPacked
+      ?'<span class="status-badge status-badge-packed">\u25cf PACKED</span>'
+      :'<span class="status-badge status-badge-delivered">&#10003; DELIVERED</span>';
+    let actions='';
+    if(isPacked)actions=`
+      <button class="btn btn-neutral btn-sm" onclick="openEditModal(${s.id})"><span class="btn-label">EDIT PACK</span></button>
+      <button id="deliver-btn-${s.id}" class="btn btn-success btn-sm" onclick="markDelivered(${s.id})"><span class="check-icon">&#10003; DELIVERED</span><span class="btn-label">MARK DELIVERED</span></button>`;
+    else actions=`
+      <button id="pickup-btn-${s.id}" class="btn btn-neutral btn-sm" onclick="markPickedUp(${s.id})"><span class="check-icon">&#10003; PICKED UP</span><span class="btn-label">MARK PICKED UP</span></button>`;
+    return `<div class="school-card status-${s.status}">
+      <div class="school-header">
+        <div class="school-name">${s.name}</div>
+        <div class="school-meta-row"><span class="school-type-badge">${s.type.toUpperCase()}</span>${sb}<span class="total-pairs">${totalPairs} PAIRS TOTAL</span></div>
+      </div>
+      <div class="school-body">
+        <div class="ts-row">
+          <div class="ts-item"><strong>PACKED:</strong> ${fmt(s.packedAt)}</div>
+          ${s.deliveredAt?`<div class="ts-item"><strong>DELIVERED:</strong> ${fmt(s.deliveredAt)}</div>`:''}
+        </div>
+        <div class="school-items">${itemTags}</div>
+        <div class="school-actions">${actions}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderHistory(loc){
+  const filtered=log.filter(e=>e.loc===loc);
+  const el=document.getElementById('historyList');
+  if(!filtered.length){el.innerHTML='<p class="empty">NO MOVEMENTS LOGGED YET</p>';return}
+  el.innerHTML=filtered.slice(0,80).map(e=>{
+    const time=e.ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    const date=e.ts.toLocaleDateString([],{month:'short',day:'numeric'});
+    let detail='',qty='';
+    if(['school','delivered','pickedup'].includes(e.type)){
+      const tot=e.items?e.items.reduce((a,b)=>a+b.qty,0):0;
+      detail=e.school;qty=(e.type==='pickedup'?'+':e.type==='delivered'?'-':'\u00b1')+tot+' PRS';
+    } else {
+      detail=`${SL[e.style]||''} \u00b7 SZ ${e.size||''}`;
+      const sign=['damaged','retired'].includes(e.type)?'-':['repaired','added'].includes(e.type)?'+':'\u00b1';
+      qty=sign+(e.qty||0)+' PRS';
+    }
+    const qc=['delivered','damaged','retired'].includes(e.type)?'var(--danger)':['pickedup','repaired','added'].includes(e.type)?'var(--success)':'var(--text)';
+    return `<div class="log-row">
+      <div class="log-meta">
+        <div class="log-title"><span class="badge ${BADGE[e.type]||'badge-info'}">${TL[e.type]||e.type}</span> <span style="font-weight:600">${detail}</span></div>
+        <div class="log-sub">${e.loc}${e.note?' \u00b7 '+e.note:''} \u00b7 ${date.toUpperCase()} ${time}</div>
+      </div>
+      <div class="log-qty" style="color:${qc}">${qty}</div>
+    </div>`;
+  }).join('');
+}
+
+document.getElementById('addToPackBtn').addEventListener('click',addLineItem);
+document.getElementById('confirmPackBtn').addEventListener('click',confirmPack);
+document.getElementById('logMovementBtn').addEventListener('click',confirmLogMovement);
+document.getElementById('editAddBtn').addEventListener('click',addEditLineItem);
+document.getElementById('saveEditBtn').addEventListener('click',saveSchoolEdit);
+
+ALL_LOCS.forEach(l=>initLoc(l));
+onTypeChange();onLocationChange();
+</script>
+</body>
+</html>
